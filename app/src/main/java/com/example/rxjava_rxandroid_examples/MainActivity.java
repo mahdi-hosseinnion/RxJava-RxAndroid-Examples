@@ -14,46 +14,48 @@ import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     //ui
+    TextView txt;
 
     //vars
+
     private CompositeDisposable disposable=new CompositeDisposable();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Observable<Task> taskObservable= Observable
-                .range(1,10)
-                .repeat(5)
-                .filter(new Predicate<Integer>() {
+        txt=findViewById(R.id.txt);
+        Observable<Long> taskObservable= Observable
+                .interval(1, TimeUnit.SECONDS)
+                .takeWhile(new Predicate<Long>() {
                     @Override
-                    public boolean test(Integer integer) throws Exception {
-                        return integer%2==0;
-                    }
-                })
-                .map(new Function<Integer, Task>() {
-                    @Override
-                    public Task apply(Integer integer) throws Exception {
-
-                        return new Task("it is the task #",false,integer);
+                    public boolean test(Long aLong) throws Exception {
+                        return aLong<=3;
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-        taskObservable.subscribe(new Observer<Task>() {
+        taskObservable.subscribe(new Observer<Long>() {
             @Override
             public void onSubscribe(Disposable d) {
 
             }
 
             @Override
-            public void onNext(Task task) {
-                Log.d(TAG, "onNext: "+task.getDescription()+task.getPriority());
+            public void onNext(Long aLong) {
+                Log.d(TAG, "onNext: aLong="+aLong);
+
+                txt.setText(""+aLong);
+                Log.d(TAG, "onNext: timer");
             }
 
             @Override
@@ -63,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onComplete() {
-
+                Log.d(TAG, "onComplete: color setted to red");
+                txt.setTextColor(Color.RED);
             }
         });
 
