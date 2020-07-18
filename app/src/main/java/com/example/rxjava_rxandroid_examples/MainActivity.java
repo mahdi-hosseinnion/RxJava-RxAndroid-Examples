@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,27 +36,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txt=findViewById(R.id.txt);
-        Observable<Long> taskObservable= Observable
-                .interval(1, TimeUnit.SECONDS)
-                .takeWhile(new Predicate<Long>() {
-                    @Override
-                    public boolean test(Long aLong) throws Exception {
-                        return aLong<=3;
-                    }
-                })
+        List<Task> list=new ArrayList<>();
+        list.addAll(DataSource.createTasksList());
+        Task[] array=new Task[]{new Task("",false,1),new Task("",false,1)};
+        Observable<Task> taskObservable= Observable
+                .fromIterable(DataSource.createTasksList())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-        taskObservable.subscribe(new Observer<Long>() {
+        taskObservable.subscribe(new Observer<Task>() {
             @Override
             public void onSubscribe(Disposable d) {
 
             }
 
             @Override
-            public void onNext(Long aLong) {
-                Log.d(TAG, "onNext: aLong="+aLong);
+            public void onNext(Task task) {
+                Log.d(TAG, "onNext: aLong="+task.getDescription());
 
-                txt.setText(""+aLong);
                 Log.d(TAG, "onNext: timer");
             }
 
