@@ -3,7 +3,10 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
-
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         applicationId "com.example.rxjava_rxandroid_examples"
         minSdkVersion 17
@@ -31,8 +34,23 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    // ViewModel and liveData
+    def lifecycle_version = "2.2.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+
     //RxJava
     implementation "io.reactivex.rxjava2:rxjava:2.2.7"
     //RxAndroid
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+    //Retrofit
+    def retrofit_version = "2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    // RxJava Call Adapter (Call object to Observable)
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+    // Convert Observable to LiveData
+    implementation "android.arch.lifecycle:reactivestreams:1.1.1"
+
+
 }

@@ -1,10 +1,13 @@
 package com.example.rxjava_rxandroid_examples;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+
+
+import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -19,6 +22,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.example.rxjava_rxandroid_examples.viewModels.TaskViewModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,47 +34,29 @@ public class MainActivity extends AppCompatActivity {
     TextView txt;
 
     //vars
-
+    TaskViewModel taskViewModel;
     private CompositeDisposable disposable=new CompositeDisposable();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txt=findViewById(R.id.txt);
-        List<Task> list=new ArrayList<>();
-        list.addAll(DataSource.createTasksList());
-        Task[] array=new Task[]{new Task("",false,1),new Task("",false,1)};
-        Observable<Task> taskObservable= Observable
-                .fromIterable(DataSource.createTasksList())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-        taskObservable.subscribe(new Observer<Task>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(Task task) {
-                Log.d(TAG, "onNext: aLong="+task.getDescription());
-
-                Log.d(TAG, "onNext: timer");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                Log.d(TAG, "onComplete: color setted to red");
-                txt.setTextColor(Color.RED);
-            }
-        });
+        taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
+        subscribeObservers();
 
     }
-
+    private void subscribeObservers(){
+        taskViewModel.makeReactiveQuery(1).observe(this, new Observer<Task>() {
+            @Override
+            public void onChanged(Task task) {
+                Log.d(TAG, "onChanged: started");
+                if (task!=null){
+                    Log.d(TAG, "onChanged: task is not null: "+task.toString());
+                    txt.setText(task.toString());
+                }
+            }
+        });
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
