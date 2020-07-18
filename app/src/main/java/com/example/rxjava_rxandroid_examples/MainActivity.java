@@ -45,12 +45,10 @@ public class MainActivity extends AppCompatActivity {
         txt = findViewById(R.id.txt);
         Observable<Task> filterObservable = Observable
                 .fromIterable(DataSource.createTasksList())
-                .filter(new Predicate<Task>() {
+                .distinct(new Function<Task, String>() {
                     @Override
-                    public boolean test(Task task) throws Exception {
-                        if (task.getDescription().equals("Take out the trash"))
-                            return true;
-                        return false;
+                    public String apply(Task task) throws Exception {
+                        return task.getDescription();
                     }
                 })
                 .subscribeOn(Schedulers.io())
