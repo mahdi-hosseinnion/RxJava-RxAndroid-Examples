@@ -43,24 +43,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txt = findViewById(R.id.txt);
-        Observable<Task> filterObservable = Observable
+        Observable<String> filterObservable = Observable
                 .fromIterable(DataSource.createTasksList())
-                .takeWhile(new Predicate<Task>() {
+                .map(new Function<Task, String>() {
                     @Override
-                    public boolean test(Task task) throws Exception {
-                        return task.isComplete();
+                    public String apply(Task task) throws Exception {
+                        return task.getDescription()+" xxxxxxxxx";
                     }
-                }).subscribeOn(Schedulers.io())
+                })
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-        filterObservable.subscribe(new Observer<Task>() {
+        filterObservable.subscribe(new Observer<String>() {
             @Override
             public void onSubscribe(Disposable d) {
                 Log.d(TAG, "onSubscribe: called...+++===+++...");
             }
 
             @Override
-            public void onNext(Task task) {
-                Log.d(TAG, "onNext: " + task.getDescription());
+            public void onNext(String description) {
+                Log.d(TAG, "onNext: " + description);
             }
 
             @Override
