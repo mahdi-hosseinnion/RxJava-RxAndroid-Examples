@@ -1,13 +1,13 @@
 package com.example.rxjava_rxandroid_examples;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 
 
 import androidx.lifecycle.ViewModelProvider;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
 import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -19,6 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -34,29 +35,51 @@ public class MainActivity extends AppCompatActivity {
     TextView txt;
 
     //vars
-    TaskViewModel taskViewModel;
-    private CompositeDisposable disposable=new CompositeDisposable();
+
+    private CompositeDisposable disposable = new CompositeDisposable();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        txt=findViewById(R.id.txt);
-        taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
-        subscribeObservers();
-
-    }
-    private void subscribeObservers(){
-        taskViewModel.makeReactiveQuery(1).observe(this, new Observer<Task>() {
+        txt = findViewById(R.id.txt);
+        Observable<Task> filterObservable = Observable
+                .fromIterable(DataSource.createTasksList())
+                .filter(new Predicate<Task>() {
+                    @Override
+                    public boolean test(Task task) throws Exception {
+                        if (task.getDescription().equals("Take out the trash"))
+                            return true;
+                        return false;
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+        filterObservable.subscribe(new Observer<Task>() {
             @Override
-            public void onChanged(Task task) {
-                Log.d(TAG, "onChanged: started");
-                if (task!=null){
-                    Log.d(TAG, "onChanged: task is not null: "+task.toString());
-                    txt.setText(task.toString());
-                }
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(Task task) {
+                Log.d(TAG, "onNext: "+task.getDescription());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
+
+
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
