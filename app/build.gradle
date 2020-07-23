@@ -52,6 +52,9 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
     // Convert Observable to LiveData
     implementation "android.arch.lifecycle:reactivestreams:1.1.1"
+    //RecyclerView
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
+
 
 
 }

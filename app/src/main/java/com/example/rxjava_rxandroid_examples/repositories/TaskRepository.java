@@ -22,9 +22,10 @@ public class TaskRepository {
     }
 
     public LiveData<Task> makeReactiveQuery(final int id) {
-        return LiveDataReactiveStreams.fromPublisher(ServiceGenerator
-                .getTaskApi()
-                .getTodo(id)
-                .subscribeOn(Schedulers.io()));
-    }
+//        return LiveDataReactiveStreams.fromPublisher(ServiceGenerator
+//            .getTaskApi()
+//            .getTodo(id)
+//                .subscribeOn(Schedulers.io()));
+        return null;
+}
 }
