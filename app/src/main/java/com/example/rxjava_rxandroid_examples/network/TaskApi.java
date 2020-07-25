@@ -19,5 +19,9 @@ public interface TaskApi {
     Observable<List<Comment>> getPostComment(
             @Path("id")int id
     );
+    @GET("posts/{id}")
+    Observable<Post> getPost(
+            @Path("id") int id
+    );
 
 }

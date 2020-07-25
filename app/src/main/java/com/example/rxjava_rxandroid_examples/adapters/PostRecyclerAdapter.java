@@ -17,11 +17,17 @@ import retrofit2.http.POST;
 
 public class PostRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Post> mPosts=new ArrayList<>();
+    private OnPostClickListener mOnPostClickListener;
+
+    public PostRecyclerAdapter(OnPostClickListener mOnPostClickListener) {
+        this.mOnPostClickListener = mOnPostClickListener;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_post_list_item,parent,false);
-        return new PostViewHolder(view);
+        return new PostViewHolder(view,mOnPostClickListener);
     }
 
     @Override
@@ -43,5 +49,9 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void updatePost(Post post){
         mPosts.set(mPosts.indexOf(post), post);
         notifyItemChanged(mPosts.indexOf(post));
+    }
+
+    public List<Post> getPosts() {
+        return mPosts;
     }
 }
