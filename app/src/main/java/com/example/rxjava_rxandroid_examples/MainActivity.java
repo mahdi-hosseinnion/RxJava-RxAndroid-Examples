@@ -20,6 +20,7 @@ import io.reactivex.subjects.PublishSubject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.INotificationSideChannel;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements OnPostClickListener {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     //ui
     ProgressBar prb_main;
@@ -51,119 +52,71 @@ public class MainActivity extends AppCompatActivity implements OnPostClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerView = findViewById(R.id.recyclerView);
-        prb_main = findViewById(R.id.prb_main);
-        initRecyclerView();
-        retrievePosts();
+        PublishSubject<Integer> source = PublishSubject.create();
 
+        // It will get 1, 2, 3, 4 and onComplete
+        source.subscribe(getFirstObserver());
+
+        source.onNext(1);
+        source.onNext(2);
+        source.onNext(3);
+
+        // It will get 4 and onComplete for second observer also.
+        source.subscribe(getSecondObserver());
+
+        source.onNext(4);
+        source.onComplete();
     }
 
-    private void initSwitchMapDemo() {
-        publishSubject
 
-                //apply switchmap operator so only one Observable can be used at a time.
-                //it clear the previous one
-                .switchMap(new Function<Post, ObservableSource<Post>>() {
-                    @Override
-                    public ObservableSource<Post> apply(Post post) throws Exception {
-                        return Observable
-                                // simulate slow network speed with interval + takeWhile + filter operators
-                                .interval(PERIOD, TimeUnit.MILLISECONDS)
-                                .subscribeOn(Schedulers.io())
-                                .takeWhile(new Predicate<Long>() {
-                                    @Override
-                                    public boolean test(Long aLong) throws Exception {
-                                        Log.d(TAG, "test: "+Thread.currentThread().getName()+", #"+aLong);
-                                        prb_main.setMax(3000- PERIOD);
-                                        prb_main.setProgress(Integer.parseInt(String.valueOf((aLong*PERIOD)+PERIOD)));
-                                        return aLong<=(3000/PERIOD);
-                                    }
-                                })
-                                .filter(new Predicate<Long>() {
-                                    @Override
-                                    public boolean test(Long aLong) throws Exception {
+    private Observer<Integer> getFirstObserver() {
+        return new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, "onSubscribe: .111. Subscribe .111................");
+                disposable.add(d);
+            }
 
-                                        return aLong>=(3000/PERIOD);
-                                    }
-                                })
-                                .flatMap(new Function<Long, ObservableSource<Post>>() {
-                                    @Override
-                                    public ObservableSource<Post> apply(Long aLong) throws Exception {
-                                        return ServiceGenerator.getTaskApi()
-                                                .getPost(post.getId());
-                                    }
-                                })
-                                ;
-                    }
-                })
-                .subscribe(new Observer<Post>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        disposable.add(d);
-                    }
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "onNext: first one 11:- " + integer + " -:11");
+            }
 
-                    @Override
-                    public void onNext(Post post) {
-                        Log.d(TAG, "onNext: done.");
-                        navViewPostActivity(post);
-                    }
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: ", e);
+            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "onError: ",e );
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: .111. OnComplete .111................");
+            }
+        };
     }
 
-    private void retrievePosts() {
-            ServiceGenerator.getTaskApi()
-                    .getPosts()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<List<Post>>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                            disposable.add(d);
-                        }
+    private Observer<Integer> getSecondObserver() {
+        return new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                disposable.add(d);
+                Log.d(TAG, "onSubscribe: .222. Subscribe .222...............");
+            }
 
-                        @Override
-                        public void onNext(List<Post> posts) {
-                            mRecyclerAdapter.setRecipes(posts);
-                        }
+            @Override
+            public void onNext(Integer integer) {
+                Log.d(TAG, "onNext: second one 22:- " + integer + " -:22");
+            }
 
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.e(TAG, "onError: ",e);
-                        }
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: ", e);
+            }
 
-                        @Override
-                        public void onComplete() {
-
-                        }
-                    });
-    }
-
-    private void navViewPostActivity(Post post){
-        Intent intent=new Intent(MainActivity.this,Main2Activity.class);
-        intent.putExtra("post",post);
-        startActivity(intent);
-    }
-    private void initRecyclerView() {
-        mRecyclerAdapter = new PostRecyclerAdapter(this);
-        recyclerView.setAdapter(mRecyclerAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        prb_main.setProgress(0);
-        initSwitchMapDemo();
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: .222. OnComplete .222...............");
+            }
+        };
     }
 
     @Override
@@ -174,10 +127,4 @@ public class MainActivity extends AppCompatActivity implements OnPostClickListen
 
     }
 
-    @Override
-    public void onPostClick(int position) {
-        Log.d(TAG, "onPostClick: clicked #"+position);
-        //submit the selected post object to be queried
-        publishSubject.onNext(mRecyclerAdapter.getPosts().get(position));
-    }
 }
