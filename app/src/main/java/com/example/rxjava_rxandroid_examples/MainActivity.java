@@ -15,12 +15,14 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.AsyncSubject;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
 
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.INotificationSideChannel;
 import android.util.Log;
@@ -50,19 +52,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BehaviorSubject<Integer> source = BehaviorSubject.create();
+        AsyncSubject<Integer> source = AsyncSubject.create();
 
-        // It will get 1, 2, 3, 4 and onComplete
+        // it will get (the last one 7) and onComplete
         source.subscribe(getFirstObserver());
 
         source.onNext(1);
         source.onNext(2);
         source.onNext(3);
 
-        // it will get (the last one 3) ,4 and onComplete
+        // it will get (the last one 7) and onComplete
         source.subscribe(getSecondObserver());
-
         source.onNext(4);
+        source.onNext(5);
+        source.onNext(6);
+        source.onNext(7);
         source.onComplete();
     }
 
