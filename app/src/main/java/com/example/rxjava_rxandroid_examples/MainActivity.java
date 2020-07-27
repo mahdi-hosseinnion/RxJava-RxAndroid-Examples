@@ -16,6 +16,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
 
 
 import android.content.Intent;
@@ -42,17 +43,13 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
 
     //vars
-    private PublishSubject<Post> publishSubject = PublishSubject.create();//for selecting post
-    PostRecyclerAdapter mRecyclerAdapter;
-    private CompositeDisposable disposable = new CompositeDisposable();
-    long timeSinceLastQuery = 0;
-    public static final int PERIOD = 100;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        PublishSubject<Integer> source = PublishSubject.create();
+        ReplaySubject<Integer> source = ReplaySubject.create();
 
         // It will get 1, 2, 3, 4 and onComplete
         source.subscribe(getFirstObserver());
@@ -61,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         source.onNext(2);
         source.onNext(3);
 
-        // It will get 4 and onComplete for second observer also.
+        // it will get 1 , 2 ,3 ,4 and onComplete
         source.subscribe(getSecondObserver());
 
         source.onNext(4);
